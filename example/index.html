@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading example</title>
+</head>
+<body>
+<!-- the time stamp makes the browser fetch the current files, never an old copy -->
+<script>for(const f of['deck.js','../engine/boot.js'])document.write(`<script src="${f}?t=${Date.now()}"><\/script>`)</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+:root{--bg:#faf9f6;--ink:#1d2430;--mute:#6b7280;--line:#e3e0d8;--card:#fff;--accent:#2b5fd9;
+--t-red:#d9362c;--t-blue:#2b5fd9;--t-green:#1a8f4a;--hl:rgba(255,214,0,.38);--hlb:#e0a800}
+@media (prefers-color-scheme:dark){:root{--bg:#16181d;--ink:#e6e8ec;--mute:#9aa1ad;--line:#2b2f38;--card:#1f232b;--accent:#7aa2ff;
+--t-red:#ff7b72;--t-blue:#7aa2ff;--t-green:#5fd08a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+header{padding:10px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header b{font-size:15px}.src{color:var(--mute);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer;font:13px system-ui,sans-serif}
+.btn:disabled{opacity:.4;cursor:default}
+main{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);height:calc(100vh - 47px)}
+@media (max-width:900px){main{grid-template-columns:1fr;height:auto}}
+#left,#right{overflow:auto;padding:12px 18px}
+#left{border-right:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;padding:8px 18px 0}
+#left{position:relative}
+#view{flex:1 1 0;min-height:0;overflow:auto;padding-bottom:16px;transform-origin:0 0}
+@media (max-width:900px){#view{flex:none;height:80vh}}
+/* several sources for one fact: the left side splits into stacked panels */
+#split{position:absolute;left:18px;right:18px;bottom:0;display:flex;flex-direction:column;gap:8px;padding-bottom:10px;background:var(--bg);z-index:4}
+#split[hidden]{display:none}
+.pane{flex:1 1 0;min-height:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.phead{font-size:12px;color:var(--mute);padding:3px 10px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.phead b{color:var(--ink)}
+.phead .btn{margin-left:auto;padding:0 8px;font-size:12px}
+.pbody{flex:1 1 0;min-height:0;overflow:auto;position:relative}
+.pane .pstage{border:0}
+/* document shelf: unused documents wait at the top as small thumbnails */
+#shelf{display:flex;gap:10px;align-items:flex-end;min-height:0;padding:2px 0 6px}
+#shelf:empty{display:none}
+.thumb{display:flex;gap:6px;align-items:center;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:6px;padding:3px 8px 3px 3px;box-shadow:0 2px 6px rgba(0,0,0,.12);opacity:.85;transition:opacity .15s,transform .15s;transform-origin:0 0}
+.thumb:hover{opacity:1;transform:translateY(-1px)} .thumb.on{opacity:1;border-color:var(--hlb);box-shadow:0 0 0 2px var(--hlb)}
+.thumb img{height:46px;border:1px solid var(--line);border-radius:2px;display:block}
+.thumb span{font-size:11px;line-height:1.25;max-width:12em;color:var(--ink)}
+.dname{font-size:12px;color:var(--mute);max-width:16em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;gap:8px;align-items:center;margin-bottom:6px;position:sticky;top:-12px;left:0;background:var(--bg);padding:6px 0;z-index:3}
+.nav .hint{color:var(--mute);font-size:12px;margin-left:auto}
+.doc{width:100%;display:flex;flex-direction:column;gap:12px}
+.doc[hidden]{display:none}  /* without this, display:flex beats [hidden] and every document stays stacked under the first */
+.pstage{scroll-margin-top:8px;position:relative;line-height:0;border:1px solid var(--line);background:#fff}
+.pstage canvas{width:100%;height:100%;display:block}
+.zoom{display:flex;gap:4px;align-items:center}
+.zoom #zl{font-size:12px;min-width:3.2em;text-align:center;color:var(--mute)}
+/* a cited place on the page: a bar and badge in the margin, never on top of the text */
+/* default: faint bar; active: solid red bar + key numbers in yellow (see-through) */
+.mk{position:absolute;pointer-events:none}
+.mk::before{content:'';position:absolute;left:-8px;top:0;bottom:0;width:2.5px;border-radius:2px;background:rgba(224,52,43,.3)}
+.mk span{pointer-events:auto;cursor:pointer;position:absolute;right:calc(100% + 13px);top:50%;transform:translateY(-50%);background:rgba(224,52,43,.35);color:#fff;font:700 10px/15px system-ui;min-width:15px;height:15px;padding:0 3px;border-radius:8px;text-align:center;white-space:nowrap}
+.mk.on::before{background:#e0342b;width:4px;left:-9px}
+.mk.on span{background:#e0342b;animation:pulse 1.2s ease-out 2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,52,43,.6)}100%{box-shadow:0 0 0 10px rgba(224,52,43,0)}}
+.key{position:absolute;background:#ffe033;mix-blend-mode:multiply;pointer-events:none}
+/* slide */
+#slot{padding-bottom:40vh}
+.bar{color:var(--mute);font-size:12px;margin:14px 0 4px;display:flex;justify-content:space-between;align-items:center}  /* above each slide: its number on the left, the AI-made tag on the right, clear of the slide's content */
+.bar:first-child{margin-top:0}
+.slide{scroll-margin-top:52px;container-type:inline-size;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:2.6cqw 3.2cqw 1.6cqw;gap:1.4cqw;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.slide h2{margin:0;font:700 3.3cqw/1.2 Georgia,serif;border-bottom:.25cqw solid var(--line);padding-bottom:1cqw}
+.sbody{display:grid;grid-template-columns:1.35fr 1fr;gap:2.4cqw;min-height:0}
+.slide.wide .sbody{grid-template-columns:1fr}  /* long horizontal drawings: facts go underneath, in two columns */
+.slide.wide ol.facts{display:grid;grid-template-columns:1fr 1fr;column-gap:2.4cqw}
+.slide.wide ol.facts li.grp{grid-column:1/-1}
+.dgm{position:relative;min-height:0;display:flex}
+.dgm svg{width:100%;height:100%}
+.aitag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:0 6px;background:var(--card)}
+ol.facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:1.1cqw;font-size:1.65cqw;line-height:1.35;min-height:0}
+ol.facts li{display:grid;grid-template-columns:2.4cqw 1fr;gap:.8cqw;cursor:pointer;border-radius:.6cqw;padding:.5cqw .6cqw}
+ol.facts li:hover,ol.facts li.on{background:var(--hl)}
+ol.facts .ai{display:none}
+/* formulas: LaTeX in <span class="tex">…</span>, rendered by KaTeX (vendored) */
+.tex.d{display:block;margin:.4cqw 0;font-size:1.1em}
+.tex.d .katex-display{margin:0}
+.texnote{color:var(--mute);font-size:1.15cqw}
+.cite{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
+.cite:hover{background:var(--hl)}
+.aitg{color:var(--mute);font-size:.85em}
+ol.facts li.showai .ai{display:inline}
+.how{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:1cqw;font:1.15cqw/1.4 system-ui;padding:0 .7cqw;margin-left:.4cqw;cursor:pointer;vertical-align:.1cqw}
+.how:hover{color:var(--ink)}
+ol.facts li.grp{display:block;cursor:default;padding:.8cqw .6cqw 0;font-size:1.3cqw;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+ol.facts li.grp:hover{background:none}
+.n.nai{background:none;border:1px solid var(--mute);color:var(--mute);font-size:1cqw;border-radius:.6cqw}
+.n{display:inline-block;width:2.2cqw;height:2.2cqw;line-height:2.2cqw;border-radius:50%;background:var(--hlb);color:#000;font-weight:700;font-size:1.3cqw;text-align:center}
+.pg{color:var(--mute);font-size:1.25cqw;white-space:nowrap}
+.ai{color:var(--mute);font-size:1.25cqw}
+.sfoot{font-size:1.25cqw;color:var(--mute)}
+svg .ref{cursor:pointer}
+svg .hlbox{fill:rgba(255,214,0,.1);stroke:rgba(224,168,0,.55);stroke-width:1;animation:svgpulse 1.2s ease-out 2}
+@keyframes svgpulse{0%{stroke-width:5;stroke-opacity:.9}100%{stroke-width:1;stroke-opacity:1}}
+svg .ref:hover text{text-decoration:underline}
+/* a slide that failed to load or draw: shown in place, the rest of the page is unaffected */
+.slerr{border:1px solid var(--t-red);border-radius:6px;padding:1.4cqw 1.8cqw;font-size:1.6cqw;color:var(--t-red)}
+.slerr pre{margin:.8cqw 0 0;white-space:pre-wrap;font:1.4cqw/1.4 ui-monospace,monospace;color:var(--ink)}
+/* guided tour (tour.js): four shades leave the target lit and clickable; the popup points at it.
+   Information step: yellow ring. Action step: green ring, a green arrow bouncing towards the target, a green "do this" line in the popup. */
+#tour{position:fixed;inset:0;z-index:50;pointer-events:none;--go:#12a150}
+#tour[hidden]{display:none}
+.tshade{position:fixed;background:rgba(10,14,22,.55);pointer-events:auto}
+.tring{position:fixed;border:2px solid var(--hlb);border-radius:8px;box-shadow:0 0 0 4px rgba(224,168,0,.28);pointer-events:none}
+.tring.act{border:3px solid var(--go);animation:tring 1.1s ease-out infinite}
+@keyframes tring{0%{box-shadow:0 0 0 0 rgba(18,161,80,.75)}100%{box-shadow:0 0 0 16px rgba(18,161,80,0)}}
+.tgo{position:fixed;display:flex;align-items:center;gap:7px;background:var(--go);color:#fff;font:700 13px/1 system-ui,sans-serif;padding:8px 10px 8px 13px;border-radius:999px;white-space:nowrap;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4);animation:tgo .65s ease-in-out infinite alternate}
+.tgo[hidden],.ttap[hidden]{display:none}
+.tgo svg{width:16px;height:16px;display:block}.tgo path{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tgo.down{flex-direction:column;gap:3px;padding:8px 12px 6px;border-radius:14px;animation-name:tgod}.tgo.down svg{transform:rotate(90deg)}
+@keyframes tgo{from{transform:translateX(-12px)}to{transform:translateX(0)}}
+@keyframes tgod{from{transform:translateY(-12px)}to{transform:translateY(0)}}
+/* the pointer that shows the gesture: it comes in, presses (a ring spreads from its tip), and leaves; or presses and drags sideways */
+.ttap{position:fixed;width:0;height:0;pointer-events:none}
+.ttap svg{position:absolute;left:-5px;top:-2px;width:26px;height:26px;animation:ttap 1.7s ease-in-out infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.ttap path{fill:#fff;stroke:#111;stroke-width:1.4;stroke-linejoin:round}
+.ttap i{position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;border:3px solid var(--go);animation:ttapr 1.7s ease-out infinite}
+@keyframes ttap{0%{transform:translate(30px,26px);opacity:0}28%{transform:translate(0,0);opacity:1}40%{transform:translate(0,0) scale(.8)}52%{transform:translate(0,0) scale(1)}82%{transform:translate(0,0);opacity:1}100%{transform:translate(0,0);opacity:0}}
+@keyframes ttapr{0%,38%{transform:scale(.2);opacity:0}42%{transform:scale(.3);opacity:1}80%,100%{transform:scale(1.25);opacity:0}}
+.ttap.drag svg{animation-name:ttapd}.ttap.drag i{animation-name:ttaprd}
+@keyframes ttapd{0%{transform:translate(-40px,22px);opacity:0}22%{transform:translate(-40px,0);opacity:1}32%{transform:translate(-40px,0) scale(.8)}78%{transform:translate(50px,0) scale(.8)}88%{transform:translate(50px,0) scale(1);opacity:1}100%{transform:translate(50px,0);opacity:0}}
+@keyframes ttaprd{0%,30%{transform:translateX(-40px) scale(.3);opacity:0}34%{transform:translateX(-40px) scale(.45);opacity:1}78%{transform:translateX(50px) scale(.45);opacity:1}100%{transform:translateX(50px) scale(1.1);opacity:0}}
+.tpop{position:fixed;width:min(350px,calc(100vw - 24px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px 16px 12px;box-shadow:0 14px 44px rgba(0,0,0,.32);pointer-events:auto;font-size:14px;line-height:1.45}
+.tarrow{position:absolute;width:14px;height:14px;background:var(--card);transform:rotate(45deg)}
+.tarrow[hidden]{display:none}
+.tarrow.up{top:-8px;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.tarrow.down{bottom:-8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tn{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:4px}
+.tdo{margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(18,161,80,.13);border:1.5px solid var(--go,#12a150);color:var(--go,#12a150);font-weight:700;display:flex;gap:8px;align-items:center}
+.tdo[hidden]{display:none}
+.tdoi{flex:none;width:18px;height:18px;border-radius:50%;background:var(--go,#12a150);position:relative;animation:tdoi 1.1s ease-out infinite}
+.tdoi::after{content:'';position:absolute;left:5px;top:4px;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent}
+@keyframes tdoi{0%{box-shadow:0 0 0 0 rgba(18,161,80,.7)}100%{box-shadow:0 0 0 9px rgba(18,161,80,0)}}
+.tdo.done{background:var(--go,#12a150);color:#fff}
+.tdo.done .tdoi{background:#fff;animation:none}
+.tdo.done .tdoi::after{left:4px;top:4px;width:8px;height:4px;border:0;border-left:2.5px solid var(--go,#12a150);border-bottom:2.5px solid var(--go,#12a150);transform:rotate(-45deg)}
+.tb{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
+.tnext.main{background:var(--accent);border-color:var(--accent);color:#fff}
+#touroffer{position:fixed;inset:0;z-index:50;background:rgba(10,14,22,.55);display:grid;place-items:center}
+#touroffer .tpop{position:static}
+/* two-column layout: the page is exactly one window tall whatever the header's height (it wraps on narrower windows), so only the two columns scroll */
+@media (min-width:901px){body{position:fixed;inset:0;display:flex;flex-direction:column}main{flex:1 1 0;min-height:0;height:auto}}
+.nopdf{position:sticky;top:8px;z-index:5;margin:12px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--t-red);background:var(--card);border-radius:6px;font-size:14px;line-height:1.5}.nopdf a,.nopdf code{word-break:break-all}
+#tour .tshade{transition:opacity .25s}#tour.lit .tshade{opacity:0}
+/* scroll step: a mouse with a moving wheel and arrows above and below */
+.tscr{position:fixed;width:26px;height:42px;margin:-21px 0 0 -13px;border:3px solid var(--go);border-radius:14px;background:#fff;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.tscr[hidden]{display:none}
+.tscr i{position:absolute;left:50%;top:6px;width:5px;height:9px;margin-left:-2.5px;border-radius:3px;background:var(--go);animation:tscr 1.3s ease-in-out infinite}
+.tscr:before,.tscr:after{content:'';position:absolute;left:50%;width:10px;height:10px;margin-left:-6.5px;border:solid var(--go);border-width:0 4px 4px 0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.tscr:before{top:-24px;animation:tscu 1.3s ease-in-out infinite}.tscr:after{bottom:-24px;animation:tscd 1.3s ease-in-out infinite}
+@keyframes tscr{0%{transform:translateY(0);opacity:0}20%{opacity:1}70%{transform:translateY(14px);opacity:1}100%{transform:translateY(14px);opacity:0}}
+@keyframes tscu{0%,100%{transform:translateY(5px) rotate(-135deg);opacity:.35}50%{transform:translateY(-4px) rotate(-135deg);opacity:1}}
+@keyframes tscd{0%,100%{transform:translateY(-5px) rotate(45deg);opacity:.35}50%{transform:translateY(4px) rotate(45deg);opacity:1}}
+.slide svg{-webkit-user-select:none;user-select:none}  /* dragging a slider must not select the labels */
