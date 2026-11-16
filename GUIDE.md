@@ -48,7 +48,7 @@ To start:
 
 Adapt these to the user's system; they were written on macOS and nothing else has been tried:
 
-- `engine/check.sh` calls Google Chrome at its macOS path and reads PDF page counts with `mdls`. What it must do on any system: load `<deck>/index.html?check` in a headless browser, read the text of `<pre id="numcheck">` (it starts with `PASS` or `FAIL`), and compare each `n:` in `deck.js` with the real page count of that PDF.
+- `engine/check.sh` calls Google Chrome at its macOS path and reads PDF page counts with plain Python. What it must do on any system: load `<deck>/index.html?check` in a headless browser, read the text of `<pre id="numcheck">` (it starts with `PASS` or `FAIL`), and compare each `n:` in `deck.js` with the real page count of that PDF.
 - `engine/tools/pdfloc.swift` and `pdftxt.swift` use macOS PDFKit; `loc.py` uses PyMuPDF and runs anywhere. What a locating tool must do: given a PDF, a page and a phrase, print the phrase's box as fractions of the page (x, y, width, height, origin at the top left).
 
 ## 4. The workflow
